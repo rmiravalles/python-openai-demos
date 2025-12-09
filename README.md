@@ -196,5 +196,4 @@ This project includes infrastructure as code (IaC) to provision Azure OpenAI dep
 
 ## Resources
 
-* [Upcoming October 2025 series: Python + AI](https://aka.ms/PythonAI/series)
-* [Video series: Learn Python + AI](https://techcommunity.microsoft.com/blog/EducatorDeveloperBlog/learn-python--ai-from-our-video-series/4400393)
+* [Video series: Learn Python + AI (October 2025)](https://techcommunity.microsoft.com/blog/educatordeveloperblog/level-up-your-python--ai-skills-with-our-complete-series/4464546)
