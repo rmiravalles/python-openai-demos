@@ -41,6 +41,7 @@ while True:
         model=MODEL_NAME,
         messages=messages,
         temperature=0.7,
+        stream=True,
     )
 
     print("\nAnswer: ")
