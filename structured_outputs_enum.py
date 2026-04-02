@@ -1,5 +1,5 @@
 import os
-from enum import Enum
+from enum import StrEnum
 
 import azure.identity
 import openai
@@ -34,7 +34,7 @@ else:
     MODEL_NAME = os.environ["OPENAI_MODEL"]
 
 
-class DayOfWeek(str, Enum):
+class DayOfWeek(StrEnum):
     SUNDAY = "Sunday"
     MONDAY = "Monday"
     TUESDAY = "Tuesday"
