@@ -10,7 +10,6 @@ This repository contains a collection of Python scripts that demonstrate how to 
   * [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
 * [Setting up the Python environment](#setting-up-the-python-environment)
 * [Configuring the OpenAI environment variables](#configuring-the-openai-environment-variables)
-  * [Using GitHub Models](#using-github-models)
   * [Using Azure OpenAI models](#using-azure-openai-models)
   * [Using OpenAI.com models](#using-openaicom-models)
   * [Using Ollama models](#using-ollama-models)
@@ -94,34 +93,10 @@ python -m pip install -r requirements.txt
 
 ## Configuring the OpenAI environment variables
 
-These scripts can be run with Azure OpenAI account, OpenAI.com, local Ollama server, or GitHub models,
+These scripts can be run with Azure OpenAI account, OpenAI.com, or local Ollama server,
 depending on the environment variables you set. All the scripts reference the environment variables from a `.env` file, and an example `.env.sample` file is provided. Host-specific instructions are below.
 
-## Using GitHub Models
-
-If you open this repository in GitHub Codespaces, you can run the scripts for free using GitHub Models without any additional steps, as your `GITHUB_TOKEN` is already configured in the Codespaces environment.
-
-If you want to run the scripts locally, you need to set up the `GITHUB_TOKEN` environment variable with a GitHub [personal access token (PAT)](https://github.com/settings/tokens). You can create a PAT by following these steps:
-
-1. Go to your GitHub account settings.
-2. Click on "Developer settings" in the left sidebar.
-3. Click on "Personal access tokens" in the left sidebar.
-4. Click on "Tokens (classic)" or "Fine-grained tokens" depending on your preference.
-5. Click on "Generate new token".
-6. Give your token a name and select the scopes you want to grant. For this project, you don't need any specific scopes.
-7. Click on "Generate token".
-8. Copy the generated token.
-9. Set the `GITHUB_TOKEN` environment variable in your terminal or IDE:
-
-    ```shell
-    export GITHUB_TOKEN=your_personal_access_token
-    ```
-
-10. Optionally, you can use a model other than "gpt-4o" by setting the `GITHUB_MODEL` environment variable. Use a model that supports function calling, such as: `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
-
 ## Using Azure OpenAI models
-
-You can run all examples in this repository using GitHub Models. If you want to run the examples using models from Azure OpenAI instead, you need to provision the Azure AI resources, which will incur costs.
 
 This project includes infrastructure as code (IaC) to provision Azure OpenAI deployments of "gpt-4o" and "text-embedding-3-large". The IaC is defined in the `infra` directory and uses the Azure Developer CLI to provision the resources.
 
@@ -131,12 +106,6 @@ This project includes infrastructure as code (IaC) to provision Azure OpenAI dep
 
     ```shell
     azd auth login
-    ```
-
-    For GitHub Codespaces users, if the previous command fails, try:
-
-   ```shell
-    azd auth login --use-device-code
     ```
 
 3. Provision the OpenAI account:

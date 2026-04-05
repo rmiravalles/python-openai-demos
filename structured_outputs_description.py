@@ -8,14 +8,14 @@ from pydantic import BaseModel, Field
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -23,10 +23,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
@@ -39,22 +35,22 @@ class CalendarEvent(BaseModel):
     participants: list[str]
 
 
-completion = client.beta.chat.completions.parse(
+completion = client.responses.parse(
     model=MODEL_NAME,
-    messages=[
+    input=[
         {
             "role": "system",
             "content": "Extract the event information. If no year is specified, assume the current year (2025).",
         },
         {"role": "user", "content": "Alice and Bob are going to a science fair on the 1st of april."},
     ],
-    response_format=CalendarEvent,
+    text_format=CalendarEvent,
+    store=False,
 )
 CalendarEvent(name="Science Fair", date="2025-04-01", participants=["Alice", "Bob"])
 
-message = completion.choices[0].message
-if message.refusal:
-    rich.print(message.refusal)
-else:
-    event = message.parsed
+if completion.output_parsed:
+    event = completion.output_parsed
     rich.print(event)
+else:
+    rich.print(completion.output_text)

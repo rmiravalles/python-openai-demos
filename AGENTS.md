@@ -4,7 +4,7 @@ This document provides comprehensive instructions for coding agents working on t
 
 ## Overview
 
-This repository contains a collection of Python scripts that demonstrate how to use the OpenAI API (and compatible APIs like Azure OpenAI, GitHub Models, and Ollama) to generate chat completions. The repository includes examples of:
+This repository contains a collection of Python scripts that demonstrate how to use the OpenAI API (and compatible APIs like Azure OpenAI and Ollama) to generate chat completions. The repository includes examples of:
 
 - Basic chat completions (streaming, async, history)
 - Function calling (basic to advanced multi-function scenarios)
@@ -12,7 +12,7 @@ This repository contains a collection of Python scripts that demonstrate how to 
 - Retrieval-Augmented Generation (RAG) with various complexity levels
 - Prompt engineering and safety features
 
-The scripts are designed to be educational and can run with multiple LLM providers: **GitHub Models (preferred for agents)**, Azure OpenAI, OpenAI.com, or local Ollama models.
+The scripts are designed to be educational and can run with multiple LLM providers: **Azure OpenAI (preferred)**, OpenAI.com, or local Ollama models.
 
 ## Code Layout
 
@@ -98,7 +98,6 @@ These scripts are automatically run by `azd provision` via the `azure.yaml` post
 **Environment Variables:**
 - `.env.sample` - Example .env file showing all possible configurations
 - `.env.sample.azure` - Azure-specific example
-- `.env.sample.github` - GitHub Models example
 - `.env.sample.ollama` - Ollama example
 - `.env.sample.openai` - OpenAI.com example
 
@@ -110,17 +109,10 @@ These scripts are automatically run by `azd provision` via the `azure.yaml` post
 - Runs: `uv run ruff check .` and `uv run black . --check --verbose`
 - **Important:** The CI uses `uv` but local development typically uses standard `pip`
 
-**`test-github-models.yaml` - Integration Test:**
-- Runs on: push to main, pull requests to main (limited paths)
-- Tests: `chat.py` and `spanish/chat.py` with GitHub Models
-- Uses: uv for setup, requires models: read permission
-- Sets: `API_HOST=github`, `GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}`, `GITHUB_MODEL=openai/gpt-4o-mini`
-
 ### Dev Container Files (.devcontainer/)
 
 - `.devcontainer/devcontainer.json` - Default dev container (Azure OpenAI setup with azd)
 - `.devcontainer/Dockerfile` - Base Python 3.12 image, installs all requirements-dev.txt
-- `.devcontainer/github/` - GitHub Models variant
 - `.devcontainer/ollama/` - Ollama variant
 - `.devcontainer/openai/` - OpenAI.com variant
 
@@ -156,31 +148,9 @@ All dev containers install all dependencies from `requirements-dev.txt` which in
 
 ### Configuring LLM Provider
 
-**For agents, ALWAYS prefer GitHub Models** since the agent often won't have access to Azure OpenAI or paid API keys.
-
 The scripts read environment variables from a `.env` file. Create one based on your provider:
 
-#### Option 1: GitHub Models (RECOMMENDED for agents)
-
-**For agents:** Check if `GITHUB_TOKEN` environment variable is available:
-```bash
-if [ -n "$GITHUB_TOKEN" ]; then
-    echo "GitHub Models available - GITHUB_TOKEN is set"
-else
-    echo "GitHub Models not available - GITHUB_TOKEN not found"
-fi
-```
-
-In GitHub Codespaces, `GITHUB_TOKEN` is already set, so **no .env file is needed** - scripts will work immediately.
-
-If `GITHUB_TOKEN` is available, you can optionally set a different model (default is `gpt-4o`):
-```bash
-export GITHUB_MODEL=openai/gpt-4o-mini
-```
-
-**Models that support function calling:** `gpt-4o`, `gpt-4o-mini`, `o3-mini`, `AI21-Jamba-1.5-Large`, `AI21-Jamba-1.5-Mini`, `Codestral-2501`, `Cohere-command-r`, `Ministral-3B`, `Mistral-Large-2411`, `Mistral-Nemo`, `Mistral-small`
-
-#### Option 2: Azure OpenAI (requires Azure resources and costs)
+#### Option 1: Azure OpenAI (recommended)
 
 **For agents:** Check if Azure OpenAI environment variables are already configured:
 ```bash
@@ -199,7 +169,7 @@ azd provision
 
 This creates real Azure resources that incur costs. The `.env` file would be created automatically with all needed variables after provisioning.
 
-#### Option 3: OpenAI.com (requires API key and costs)
+#### Option 2: OpenAI.com (requires API key and costs)
 
 **For agents:** Check if OpenAI.com API key is available:
 ```bash
@@ -212,7 +182,7 @@ fi
 
 If `OPENAI_API_KEY` is available, ensure `API_HOST=openai` and `OPENAI_MODEL` are also set (e.g., `gpt-4o-mini`).
 
-#### Option 4: Ollama (requires local Ollama installation)
+#### Option 3: Ollama (requires local Ollama installation)
 
 **For agents:** Check if Ollama is installed and running:
 ```bash
@@ -292,13 +262,9 @@ pre-commit run --all-files
 
 ### Integration Tests
 
-The repository has limited automated testing via GitHub Actions. The primary test runs basic scripts with GitHub Models:
+The repository has limited automated testing via GitHub Actions. Changes to scripts should be manually verified by running them:
 
 ```bash
-# This is what the CI does (requires GitHub token):
-export API_HOST=github
-export GITHUB_TOKEN=$YOUR_TOKEN
-export GITHUB_MODEL=openai/gpt-4o-mini
 python chat.py
 python spanish/chat.py
 ```
@@ -309,13 +275,13 @@ python spanish/chat.py
 
 ### Environment Variables
 
-- **All scripts default to `API_HOST=github`** if no .env file is present and no environment variable is set.
+- **All scripts default to `API_HOST=azure`** if no .env file is present and no environment variable is set.
 - Scripts use `load_dotenv(override=True)` which means .env values override environment variables.
 
 ### Model Compatibility
 
 - **Function calling scripts require models that support tools**. Not all models support this:
-  - ✅ Supported: `gpt-4o`, `gpt-4o-mini`, and many others (see GitHub Models list above)
+  - ✅ Supported: `gpt-4o`, `gpt-4o-mini`, `gpt-5.4`, and many others
   - ❌ Not supported: Older models, some local Ollama models
 - If a script fails with a function calling error, check if your model supports the `tools` parameter.
 
@@ -365,14 +331,14 @@ python spanish/chat.py
 - Solution: Install RAG dependencies: `python -m pip install -r requirements-rag.txt`
 
 **Error: `KeyError: 'AZURE_OPENAI_ENDPOINT'`**
-- Solution: Your `.env` file is missing required Azure variables, or `API_HOST` is set to `azure` but you haven't configured Azure. Switch to GitHub Models or configure Azure properly.
+- Solution: Your `.env` file is missing required Azure variables, or `API_HOST` is set to `azure` but you haven't configured Azure. Run `azd provision` or configure Azure properly.
 
 **Error: `openai.APIError: content_filter`**
 - This is expected behavior for `chat_safety.py` - it's demonstrating content filtering.
 - The script catches this error and prints a message.
 
 **Error: Function calling not supported**
-- Solution: Use a model that supports tools. For GitHub Models, use `gpt-4o`, `gpt-4o-mini`, or another compatible model from the list above.
+- Solution: Use a model that supports tools, such as `gpt-4o`, `gpt-4o-mini`, or `gpt-5.4`.
 
 **Error: `azd` command not found**
 - Solution: Install Azure Developer CLI: https://aka.ms/install-azd
@@ -385,9 +351,8 @@ When making code changes:
 2. **Run linters before making changes** to understand baseline: `ruff check .` and `black . --check`
 3. **Make minimal, surgical changes** to the relevant scripts.
 4. **Run linters again after changes**: `ruff check .` and `black .` (auto-fix)
-5. **Manually test the changed script** with GitHub Models:
+5. **Manually test the changed script**:
    ```bash
-   export GITHUB_TOKEN=$YOUR_TOKEN
    python your_modified_script.py
    ```
 6. **Check that Spanish translations are updated** if applicable.

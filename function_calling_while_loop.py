@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -22,10 +22,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
@@ -35,44 +31,40 @@ else:
 tools = [
     {
         "type": "function",
-        "function": {
-            "name": "lookup_weather",
-            "description": "Lookup the weather for a given city name or zip code.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "city_name": {
-                        "type": "string",
-                        "description": "The city name",
-                    },
-                    "zip_code": {
-                        "type": "string",
-                        "description": "The zip code",
-                    },
+        "name": "lookup_weather",
+        "description": "Lookup the weather for a given city name or zip code.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city_name": {
+                    "type": "string",
+                    "description": "The city name",
                 },
-                "additionalProperties": False,
+                "zip_code": {
+                    "type": "string",
+                    "description": "The zip code",
+                },
             },
+            "additionalProperties": False,
         },
     },
     {
         "type": "function",
-        "function": {
-            "name": "lookup_movies",
-            "description": "Lookup movies playing in a given city name or zip code.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "city_name": {
-                        "type": "string",
-                        "description": "The city name",
-                    },
-                    "zip_code": {
-                        "type": "string",
-                        "description": "The zip code",
-                    },
+        "name": "lookup_movies",
+        "description": "Lookup movies playing in a given city name or zip code.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city_name": {
+                    "type": "string",
+                    "description": "The city name",
                 },
-                "additionalProperties": False,
+                "zip_code": {
+                    "type": "string",
+                    "description": "The zip code",
+                },
             },
+            "additionalProperties": False,
         },
     },
 ]
@@ -125,34 +117,28 @@ print(f"Model: {MODEL_NAME} on Host: {API_HOST}\n")
 
 while True:
     print("Calling model...\n")
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model=MODEL_NAME,
-        messages=messages,  # includes prior tool outputs
+        input=messages,  # includes prior tool outputs
         tools=tools,
         tool_choice="auto",
-        parallel_tool_calls=False,  # ensure sequential tool calls
+        store=False,
     )
 
-    assistant_message = response.choices[0].message
+    tool_calls = [item for item in response.output if item.type == "function_call"]
     # If the assistant returned standard content with no tool calls, we're done.
-    if not assistant_message.tool_calls:
+    if not tool_calls:
         print("Assistant:")
-        print(assistant_message.content)
+        print(response.output_text)
         break
 
-    # Append the assistant tool request message to conversation
-    messages.append(
-        {
-            "role": "assistant",
-            "content": assistant_message.content or "",
-            "tool_calls": [tc.model_dump() for tc in assistant_message.tool_calls],
-        }
-    )
+    # Append the function call items from response output
+    messages.extend(response.output)
 
     # Execute each requested tool sequentially.
-    for tool_call in assistant_message.tool_calls:
-        fn_name = tool_call.function.name
-        raw_args = tool_call.function.arguments or "{}"
+    for tool_call in tool_calls:
+        fn_name = tool_call.name
+        raw_args = tool_call.arguments or "{}"
         print(f"Tool request: {fn_name}({raw_args})")
         target_tool = tool_mapping.get(fn_name)
         parsed_args = json.loads(raw_args)
@@ -161,9 +147,8 @@ while True:
         # Provide the tool output back to the model
         messages.append(
             {
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "name": fn_name,
-                "content": tool_result_str,
+                "type": "function_call_output",
+                "call_id": tool_call.call_id,
+                "output": tool_result_str,
             }
         )

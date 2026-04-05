@@ -7,16 +7,16 @@ import azure.identity
 import openai
 from dotenv import load_dotenv
 
-# Setup del cliente OpenAI para usar Azure, OpenAI.com, Ollama o GitHub Models (según variables de entorno)
+# Setup del cliente OpenAI para usar Azure, OpenAI.com u Ollama (según variables de entorno)
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -24,10 +24,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
@@ -66,33 +62,31 @@ tool_mapping: dict[str, Callable[..., Any]] = {
 tools = [
     {
         "type": "function",
-        "function": {
-            "name": "search_database",
-            "description": "Busca en la base de datos productos relevantes según el query del usuario",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "search_query": {
-                        "type": "string",
-                        "description": "Texto (query) para búsqueda full text, ej: 'tenis rojos'",
-                    },
-                    "price_filter": {
-                        "type": "object",
-                        "description": "Filtra resultados según el precio del producto",
-                        "properties": {
-                            "comparison_operator": {
-                                "type": "string",
-                                "description": "Operador para comparar el valor de la columna: '>', '<', '>=', '<=', '='",  # noqa
-                            },
-                            "value": {
-                                "type": "number",
-                                "description": "Valor límite para comparar, ej: 30",
-                            },
+        "name": "search_database",
+        "description": "Busca en la base de datos productos relevantes según el query del usuario",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "search_query": {
+                    "type": "string",
+                    "description": "Texto (query) para búsqueda full text, ej: 'tenis rojos'",
+                },
+                "price_filter": {
+                    "type": "object",
+                    "description": "Filtra resultados según el precio del producto",
+                    "properties": {
+                        "comparison_operator": {
+                            "type": "string",
+                            "description": "Operador para comparar el valor de la columna: '>', '<', '>=', '<=', '='",  # noqa
+                        },
+                        "value": {
+                            "type": "number",
+                            "description": "Valor límite para comparar, ej: 30",
                         },
                     },
                 },
-                "required": ["search_query"],
             },
+            "required": ["search_query"],
         },
     }
 ]
@@ -105,34 +99,28 @@ messages: list[dict[str, Any]] = [
 print(f"Modelo: {MODEL_NAME} en Host: {API_HOST}\n")
 
 # Primera respuesta del model (puede incluir una tool call)
-response = client.chat.completions.create(
+response = client.responses.create(
     model=MODEL_NAME,
-    messages=messages,
+    input=messages,
     tools=tools,
     tool_choice="auto",
-    parallel_tool_calls=False,
+    store=False,
 )
 
-assistant_msg = response.choices[0].message
+tool_calls = [item for item in response.output if item.type == "function_call"]
 
 # Si el model no pidió ninguna tool call, solo imprime la respuesta.
-if not assistant_msg.tool_calls:
+if not tool_calls:
     print("Assistant:")
-    print(assistant_msg.content)
+    print(response.output_text)
 else:
-    # Agrega el mensaje del assistant incluyendo metadata de la tool call
-    messages.append(
-        {
-            "role": "assistant",
-            "content": assistant_msg.content or "",
-            "tool_calls": [tc.model_dump() for tc in assistant_msg.tool_calls],
-        }
-    )
+    # Agrega los items de function_call del response output
+    messages.extend(response.output)
 
     # Procesa cada tool pedida de forma secuencial (normalmente solo una aquí)
-    for tool_call in assistant_msg.tool_calls:
-        fn_name = tool_call.function.name
-        raw_args = tool_call.function.arguments or "{}"
+    for tool_call in tool_calls:
+        fn_name = tool_call.name
+        raw_args = tool_call.arguments or "{}"
         print(f"Tool request: {fn_name}({raw_args})")
 
         target = tool_mapping.get(fn_name)
@@ -160,19 +148,18 @@ else:
 
         messages.append(
             {
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "name": fn_name,
-                "content": tool_content,
+                "type": "function_call_output",
+                "call_id": tool_call.call_id,
+                "output": tool_content,
             }
         )
 
     # Segunda respuesta del model después de darle los tool outputs
-    followup = client.chat.completions.create(
+    followup = client.responses.create(
         model=MODEL_NAME,
-        messages=messages,
+        input=messages,
         tools=tools,
+        store=False,
     )
-    final_msg = followup.choices[0].message
     print("Assistant (final):")
-    print(final_msg.content)
+    print(followup.output_text)
