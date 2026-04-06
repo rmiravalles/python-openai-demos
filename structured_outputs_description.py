@@ -40,14 +40,13 @@ completion = client.responses.parse(
     input=[
         {
             "role": "system",
-            "content": "Extract the event information. If no year is specified, assume the current year (2025).",
+            "content": "Extract the event information. If no year is specified, assume the current year (2026).",
         },
         {"role": "user", "content": "Alice and Bob are going to a science fair on the 1st of april."},
     ],
     text_format=CalendarEvent,
     store=False,
 )
-CalendarEvent(name="Science Fair", date="2025-04-01", participants=["Alice", "Bob"])
 
 if completion.output_parsed:
     event = completion.output_parsed

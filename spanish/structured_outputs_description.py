@@ -40,14 +40,14 @@ completion = client.responses.parse(
     input=[
         {
             "role": "system",
-            "content": "Extrae la info del evento. Si no dice el año, asumí que es este año (2025).",
+            "content": "Extrae la info del evento. Si no dice el año, asumí que es este año (2026).",
         },
         {"role": "user", "content": "Alice y Bob van a ir a una feria de ciencias el 1 de abril."},
     ],
     text_format=CalendarEvent,
     store=False,
 )
-CalendarEvent(name="Feria de Ciencias", date="2025-04-01", participants=["Alice", "Bob"])
+
 if completion.output_parsed:
     event = completion.output_parsed
     rich.print(event)

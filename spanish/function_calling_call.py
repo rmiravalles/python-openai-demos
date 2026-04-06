@@ -44,11 +44,11 @@ tools = [
             "type": "object",
             "properties": {
                 "city_name": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "description": "El nombre de la ciudad",
                 },
                 "zip_code": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "description": "El código postal",
                 },
             },

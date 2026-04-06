@@ -37,5 +37,5 @@ response = client.responses.create(
     store=False,
 )
 
-print(f"Repuesta de {API_HOST}: \n")
+print(f"Respuesta de {API_HOST}: \n")
 print(response.output_text)
