@@ -1,9 +1,9 @@
 # Demos de Python con OpenAI
 
-Este repositorio contiene una colección de scripts en Python que demuestran cómo usar la API de OpenAI (y modelos compatibles) para generar completados de chat. 📺 [Video tutorial de como usar este repositorio](https://youtu.be/0WwpMFMHEOo?si=9K4jFdBYdj-kb_GL)
+Este repositorio contiene una colección de scripts en Python que demuestran cómo usar la API de Responses de OpenAI (y modelos compatibles). 📺 [Video tutorial de como usar este repositorio](https://youtu.be/0WwpMFMHEOo?si=9K4jFdBYdj-kb_GL)
 
 * [Ejemplos](#ejemplos)
-  * [Completados de chat de OpenAI](#completados-de-chat-de-openai)
+  * [Responses de OpenAI](#responses-de-openai)
   * [Llamadas a funciones (Function calling)](#llamadas-a-funciones-function-calling)
   * [Generación aumentada con recuperación (RAG)](#generación-aumentada-con-recuperación-rag)
   * [Salidas estructuradas](#salidas-estructuradas)
@@ -16,9 +16,9 @@ Este repositorio contiene una colección de scripts en Python que demuestran có
 
 ## Ejemplos
 
-### Completados de chat de OpenAI
+### Responses de OpenAI
 
-Estos scripts usan el paquete `openai` de Python para demostrar cómo utilizar la API de Chat Completions. En orden creciente de complejidad:
+Estos scripts usan el paquete `openai` de Python para demostrar cómo utilizar la API de Responses. En orden creciente de complejidad:
 1. [`chat.py`](chat.py): Script simple que muestra cómo generar un completado de chat.
 2. [`chat_stream.py`](chat_stream.py): Añade `stream=True` para recibir el completado progresivamente.
 3. [`chat_history.py`](chat_history.py): Añade un chat bidireccional que conserva el historial y lo reenvía en cada llamada.
@@ -32,7 +32,7 @@ Scripts adicionales de características:
 
 ### Llamadas a funciones (Function calling)
 
-Estos scripts muestran cómo usar la característica "tools" (function calling) de la API de Chat Completions. Permite que el modelo decida si invoca funciones definidas por el desarrollador y devolver argumentos estructurados en lugar (o antes) de una respuesta en lenguaje natural.
+Estos scripts muestran cómo usar la característica "tools" (function calling) de la API de Responses. Permite que el modelo decida si invoca funciones definidas por el desarrollador y devolver argumentos estructurados en lugar (o antes) de una respuesta en lenguaje natural.
 
 En todos los ejemplos se declara una lista de funciones en el parámetro `tools`. El modelo puede responder con `message.tool_calls` que contiene una o más llamadas. Cada llamada incluye el `name` de la función y una cadena JSON con `arguments` que respetan el esquema declarado. Tu aplicación debe: (1) detectar las llamadas, (2) ejecutar la lógica local/externa correspondiente y (3) (opcionalmente) enviar el resultado de la herramienta de vuelta al modelo para una respuesta final.
 
