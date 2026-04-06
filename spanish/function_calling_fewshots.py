@@ -103,7 +103,7 @@ messages: list[dict[str, Any]] = [
     },
     {
         "type": "function_call_output",
-        "call_id": "fc_abc123",
+        "call_id": "call_abc123",
         "output": json.dumps({"result": "Resultados de búsqueda para equipo de escalada exterior: ..."}),
     },
     {"role": "user", "content": "¿Hay tenis por menos de $50?"},
