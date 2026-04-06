@@ -8,14 +8,14 @@ from lunr import lunr
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -23,10 +23,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
@@ -69,15 +65,16 @@ while True:
     question = input("\nYour question about electric cars: ")
 
     # Rewrite the query to fix typos and incorporate past context
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model=MODEL_NAME,
         temperature=0.05,
-        messages=[
+        input=[
             {"role": "system", "content": QUERY_REWRITE_SYSTEM_MESSAGE},
             {"role": "user", "content": f"New user question:{question}\n\nConversation history:{messages}"},
         ],
+        store=False,
     )
-    search_query = response.choices[0].message.content
+    search_query = response.output_text
     print(f"Rewritten query: {search_query}")
 
     # Search the CSV for the question
@@ -86,9 +83,9 @@ while True:
 
     # Use the matches to generate a response
     messages.append({"role": "user", "content": f"{question}\nSources: {matches}"})
-    response = client.chat.completions.create(model=MODEL_NAME, temperature=0.3, messages=messages)
+    response = client.responses.create(model=MODEL_NAME, temperature=0.3, input=messages, store=False)
 
-    bot_response = response.choices[0].message.content
+    bot_response = response.output_text
     messages.append({"role": "assistant", "content": bot_response})
 
     print(f"\nResponse from {API_HOST} {MODEL_NAME}: \n")

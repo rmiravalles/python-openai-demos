@@ -9,14 +9,14 @@ from lunr import lunr
 
 # Configura el cliente de OpenAI para usar la API de Azure, OpenAI.com u Ollama
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -24,10 +24,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
@@ -72,18 +68,19 @@ while True:
     question = input("\nTu pregunta sobre coches eléctricos: ")
 
     # Reescribir la consulta para corregir errores tipográficos e incorporar contexto pasado
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model=MODEL_NAME,
         temperature=0.05,
-        messages=[
+        input=[
             {"role": "system", "content": QUERY_REWRITE_SYSTEM_MESSAGE},
             {
                 "role": "user",
                 "content": f"Nueva pregunta del usuario:{question}\n\nHistorial de conversación:{messages}",
             },
         ],
+        store=False,
     )
-    search_query = response.choices[0].message.content
+    search_query = response.output_text
     print(f"Consulta reescrita: {search_query}")
 
     # Buscar en el CSV la pregunta
@@ -92,9 +89,9 @@ while True:
 
     # Usar las coincidencias para generar una respuesta
     messages.append({"role": "user", "content": f"{question}\nFuentes: {matches}"})
-    response = client.chat.completions.create(model=MODEL_NAME, temperature=0.3, messages=messages)
+    response = client.responses.create(model=MODEL_NAME, temperature=0.3, input=messages, store=False)
 
-    bot_response = response.choices[0].message.content
+    bot_response = response.output_text
     messages.append({"role": "assistant", "content": bot_response})
 
     print(f"\nRespuesta de {API_HOST} {MODEL_NAME}: \n")

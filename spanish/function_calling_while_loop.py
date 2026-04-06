@@ -7,25 +7,22 @@ import azure.identity
 import openai
 from dotenv import load_dotenv
 
-# Configura el cliente de OpenAI para usar Azure, OpenAI.com, GitHub Models u Ollama
+# Configura el cliente de OpenAI para usar Azure, OpenAI.com u Ollama
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
     MODEL_NAME = os.environ["OPENAI_MODEL"]
@@ -34,32 +31,28 @@ else:
 tools = [
     {
         "type": "function",
-        "function": {
-            "name": "lookup_weather",
-            "description": "Lookup the weather for a given city name or zip code.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "city_name": {"type": "string", "description": "The city name"},
-                    "zip_code": {"type": "string", "description": "The zip code"},
-                },
-                "additionalProperties": False,
+        "name": "lookup_weather",
+        "description": "Lookup the weather for a given city name or zip code.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city_name": {"type": "string", "description": "The city name"},
+                "zip_code": {"type": "string", "description": "The zip code"},
             },
+            "additionalProperties": False,
         },
     },
     {
         "type": "function",
-        "function": {
-            "name": "lookup_movies",
-            "description": "Lookup movies playing in a given city name or zip code.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "city_name": {"type": "string", "description": "The city name"},
-                    "zip_code": {"type": "string", "description": "The zip code"},
-                },
-                "additionalProperties": False,
+        "name": "lookup_movies",
+        "description": "Lookup movies playing in a given city name or zip code.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city_name": {"type": "string", "description": "The city name"},
+                "zip_code": {"type": "string", "description": "The zip code"},
             },
+            "additionalProperties": False,
         },
     },
 ]
@@ -110,33 +103,27 @@ print(f"Modelo: {MODEL_NAME} en Host: {API_HOST}\n")
 
 while True:
     print("Invocando el modelo...\n")
-    response = client.chat.completions.create(
+    response = client.responses.create(
         model=MODEL_NAME,
-        messages=messages,
+        input=messages,
         tools=tools,
         tool_choice="auto",
-        parallel_tool_calls=False,
+        store=False,
     )
 
-    choice = response.choices[0]
-    assistant_message = choice.message
+    tool_calls = [item for item in response.output if item.type == "function_call"]
 
-    if not assistant_message.tool_calls:
+    if not tool_calls:
         print("Asistente:")
-        print(assistant_message.content)
+        print(response.output_text)
         break
 
-    messages.append(
-        {
-            "role": "assistant",
-            "content": assistant_message.content or "",
-            "tool_calls": [tc.model_dump() for tc in assistant_message.tool_calls],
-        }
-    )
+    # Agrega los items de function_call del response output
+    messages.extend(response.output)
 
-    for tool_call in assistant_message.tool_calls:
-        fn_name = tool_call.function.name
-        raw_args = tool_call.function.arguments or "{}"
+    for tool_call in tool_calls:
+        fn_name = tool_call.name
+        raw_args = tool_call.arguments or "{}"
         print(f"Solicitud de herramienta: {fn_name}({raw_args})")
         target_tool = tool_mapping.get(fn_name)
         parsed_args = json.loads(raw_args)
@@ -145,9 +132,8 @@ while True:
         # Agrega la respuesta de la herramienta a la conversación
         messages.append(
             {
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "name": fn_name,
-                "content": tool_result_str,
+                "type": "function_call_output",
+                "call_id": tool_call.call_id,
+                "output": tool_result_str,
             }
         )

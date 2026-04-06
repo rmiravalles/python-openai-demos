@@ -9,7 +9,6 @@ Este repositorio contiene una colección de scripts en Python que demuestran có
   * [Salidas estructuradas](#salidas-estructuradas)
 * [Configuración del entorno de Python](#configuración-del-entorno-de-python)
 * [Configurando las variables de entorno de OpenAI](#configurando-las-variables-de-entorno-de-openai)
-  * [Usando modelos de GitHub](#usando-modelos-de-github)
   * [Usando Azure OpenAI](#usando-azure-openai)
   * [Usando OpenAI.com](#usando-openaicom)
   * [Usando modelos de Ollama](#usando-modelos-de-ollama)
@@ -100,7 +99,7 @@ python -m pip install -r requirements.txt
 
 ## Configurando las variables de entorno de OpenAI
 
-Los scripts pueden ejecutarse con Azure OpenAI, OpenAI.com, Ollama (local) o GitHub Models, según lo que configures en el archivo `.env`. Existe un `.env.sample` como plantilla.
+Los scripts pueden ejecutarse con Azure OpenAI, OpenAI.com u Ollama (local), según lo que configures en el archivo `.env`. Existe un `.env.sample` como plantilla.
 
 1. Copia la plantilla:
 
@@ -110,32 +109,14 @@ cp .env.sample .env
 
 Luego ajusta según el proveedor elegido.
 
-### Usando modelos de GitHub
-
-En GitHub Codespaces el `GITHUB_TOKEN` ya está disponible y puedes usar gratis GitHub Models.
-
-Para uso local crea un [PAT de GitHub](https://github.com/settings/tokens) (sin scopes especiales) y expórtalo:
-
-```bash
-export GITHUB_TOKEN=TU_TOKEN
-```
-
-Opcional: cambia de modelo (por defecto `gpt-4o`) definiendo `GITHUB_MODEL` (por ejemplo `gpt-4o-mini`):
-
-```bash
-API_HOST=github
-GITHUB_MODEL=gpt-4o
-```
-
 ### Usando Azure OpenAI
 
 Provisiona los recursos y despliegues (por ejemplo con Azure Developer CLI) de modelos como `gpt-4o` y un modelo de embeddings.
 
 ```bash
 API_HOST=azure
-AZURE_OPENAI_ENDPOINT=https://TU-SERVICIO.openai.azure.com/openai/v1
+AZURE_OPENAI_ENDPOINT=https://TU-SERVICIO.openai.azure.com
 AZURE_OPENAI_CHAT_DEPLOYMENT=TU-DEPLOYMENT-CHAT
-AZURE_OPENAI_VERSION=2024-03-01-preview
 ```
 
 Inicia sesión si no lo has hecho:

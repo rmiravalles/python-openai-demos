@@ -10,7 +10,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -25,10 +25,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])

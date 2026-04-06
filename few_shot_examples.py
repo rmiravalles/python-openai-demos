@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
         azure.identity.DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
     client = openai.OpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
@@ -21,10 +21,6 @@ if API_HOST == "azure":
 elif API_HOST == "ollama":
     client = openai.OpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-
-elif API_HOST == "github":
-    client = openai.OpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 
 else:
     client = openai.OpenAI(api_key=os.environ["OPENAI_KEY"])
@@ -40,10 +36,10 @@ Instead of providing the full answer, you respond with a hint or a clue.
 USER_MESSAGE = "What is the largest planet in our solar system?"
 
 
-response = client.chat.completions.create(
+response = client.responses.create(
     model=MODEL_NAME,
     temperature=0.7,
-    messages=[
+    input=[
         {"role": "system", "content": SYSTEM_MESSAGE},
         {"role": "user", "content": "What is the capital of France?"},
         {"role": "assistant", "content": "Can you remember the name of the city that is known for the Eiffel Tower?"},
@@ -53,8 +49,9 @@ response = client.chat.completions.create(
         {"role": "assistant", "content": "How many protons does an oxygen atom have?"},
         {"role": "user", "content": USER_MESSAGE},
     ],
+    store=False,
 )
 
 
 print(f"Response from {API_HOST}: \n")
-print(response.choices[0].message.content)
+print(response.output_text)

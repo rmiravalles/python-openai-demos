@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # Configura el cliente de OpenAI para usar la API de Azure, OpenAI.com u Ollama
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "github")
+API_HOST = os.getenv("API_HOST", "azure")
 
 azure_credential = None  # Guarda la Azure Credential para poder cerrarla correctamente
 if API_HOST == "azure":
@@ -16,16 +16,13 @@ if API_HOST == "azure":
         azure_credential, "https://cognitiveservices.azure.com/.default"
     )
     client = openai.AsyncOpenAI(
-        base_url=os.environ["AZURE_OPENAI_ENDPOINT"],
+        base_url=f"{os.environ['AZURE_OPENAI_ENDPOINT'].rstrip('/')}/openai/v1/",
         api_key=token_provider,
     )
     MODEL_NAME = os.environ["AZURE_OPENAI_CHAT_DEPLOYMENT"]
 elif API_HOST == "ollama":
     client = openai.AsyncOpenAI(base_url=os.environ["OLLAMA_ENDPOINT"], api_key="nokeyneeded")
     MODEL_NAME = os.environ["OLLAMA_MODEL"]
-elif API_HOST == "github":
-    client = openai.AsyncOpenAI(base_url="https://models.github.ai/inference", api_key=os.environ["GITHUB_TOKEN"])
-    MODEL_NAME = os.getenv("GITHUB_MODEL", "openai/gpt-4o")
 else:
     client = openai.AsyncOpenAI(api_key=os.environ["OPENAI_KEY"])
     MODEL_NAME = os.environ["OPENAI_MODEL"]
@@ -33,9 +30,9 @@ else:
 
 async def generate_response(location):
     print("Generando respuesta para", location)
-    response = await client.chat.completions.create(
+    response = await client.responses.create(
         model=MODEL_NAME,
-        messages=[
+        input=[
             {"role": "system", "content": "Eres un asistente útil."},
             {
                 "role": "user",
@@ -45,9 +42,10 @@ async def generate_response(location):
             },
         ],
         temperature=0.7,
+        store=False,
     )
     print("Obtuve respuesta para ", location)
-    return response.choices[0].message.content
+    return response.output_text
 
 
 async def single() -> None:
