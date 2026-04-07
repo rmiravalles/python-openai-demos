@@ -1,10 +1,10 @@
 # Python OpenAI demos
 
-This repository contains a collection of Python scripts that demonstrate how to use the OpenAI API to generate chat completions.
+This repository contains a collection of Python scripts that demonstrate how to use the OpenAI Responses API.
 [📺 Watch this video walkthrough of running these demos in GitHub Codespaces](https://www.youtube.com/watch?v=_daw48A-RZI)
 
 * [Examples](#examples)
-  * [OpenAI Chat Completions](#openai-chat-completions)
+  * [OpenAI Responses](#openai-responses)
   * [Function calling](#function-calling)
   * [Structured outputs](#structured-outputs)
   * [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
@@ -17,14 +17,14 @@ This repository contains a collection of Python scripts that demonstrate how to 
 
 ## Examples
 
-### OpenAI Chat Completions
+### OpenAI Responses
 
-These scripts use the openai Python package to demonstrate how to use the OpenAI Chat Completions API.
+These scripts use the openai Python package to demonstrate how to use the OpenAI Responses API.
 In increasing order of complexity, the scripts are:
 
-1. [`chat.py`](./chat.py): A simple script that demonstrates how to use the OpenAI API to generate chat completions.
-2. [`chat_stream.py`](./chat_stream.py): Adds `stream=True` to the API call to return a generator that streams the completion as it is being generated.
-3. [`chat_history.py`](./chat_history.py): Adds a back-and-forth chat interface using `input()` which keeps track of past messages and sends them with each chat completion call.
+1. [`chat.py`](./chat.py): A simple script that demonstrates how to use the OpenAI Responses API to generate a response.
+2. [`chat_stream.py`](./chat_stream.py): Adds `stream=True` to the API call to return a generator that streams the response text as it is being generated.
+3. [`chat_history.py`](./chat_history.py): Adds a back-and-forth chat interface using `input()` which keeps track of past messages and sends them with each API call.
 4. [`chat_history_stream.py`](./chat_history_stream.py): The same idea, but with `stream=True` enabled.
 
 Plus these scripts to demonstrate additional features:
@@ -34,9 +34,9 @@ Plus these scripts to demonstrate additional features:
 
 ### Function calling
 
-These scripts demonstrate using the Chat Completions API "tools" (a.k.a. function calling) feature, which lets the model decide when to call developer-defined functions and return structured arguments instead of (or before) a natural language answer.
+These scripts demonstrate using the Responses API "tools" (a.k.a. function calling) feature, which lets the model decide when to call developer-defined functions and return structured arguments instead of (or before) a natural language answer.
 
-In all of these examples, a list of functions is declared in the `tools` parameter. The model may respond with `message.tool_calls` containing one or more tool calls. Each tool call includes the function `name` and a JSON string of `arguments` that match the declared schema. Your application is responsible for: (1) detecting tool calls, (2) executing the corresponding local / external logic, and (3) (optionally) sending the tool result back to the model for a final answer.
+In all of these examples, a list of functions is declared in the `tools` parameter. The model may respond with one or more tool calls as items in `response.output` (for example, items where `type == "function_call"`). Each tool call item includes the function `name` and a JSON string of `arguments` that match the declared schema. Your application is responsible for: (1) detecting tool calls, (2) executing the corresponding local / external logic, and (3) (optionally) sending the tool result back to the model for a final answer.
 
 Scripts (in increasing order of capability):
 
@@ -62,7 +62,7 @@ python -m pip install -r requirements-rag.txt
 Then run the scripts (in order of increasing complexity):
 
 * [`rag_csv.py`](./rag_csv.py): Retrieves matching results from a CSV file and uses them to answer user's question.
-* [`rag_multiturn.py`](./rag_multiturn.py): The same idea, but with a back-and-forth chat interface using `input()` which keeps track of past messages and sends them with each chat completion call.
+* [`rag_multiturn.py`](./rag_multiturn.py): The same idea, but with a back-and-forth chat interface using `input()` which keeps track of past messages and sends them with each API call.
 * [`rag_queryrewrite.py`](./rag_queryrewrite.py): Adds a query rewriting step to the RAG process, where the user's question is rewritten to improve the retrieval results.
 * [`rag_documents_ingestion.py`](./rag_documents_ingestion.py): Ingests PDFs by using pymupdf to convert to markdown, then using Langchain to split into chunks, then using OpenAI to embed the chunks, and finally storing in a local JSON file.
 * [`rag_documents_flow.py`](./rag_documents_flow.py): A RAG flow that retrieves matching results from the local JSON file created by `rag_documents_ingestion.py`.

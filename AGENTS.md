@@ -4,9 +4,9 @@ This document provides comprehensive instructions for coding agents working on t
 
 ## Overview
 
-This repository contains a collection of Python scripts that demonstrate how to use the OpenAI API (and compatible APIs like Azure OpenAI and Ollama) to generate chat completions. The repository includes examples of:
+This repository contains a collection of Python scripts that demonstrate how to use the OpenAI Responses API (and compatible APIs like Azure OpenAI and Ollama). The repository includes examples of:
 
-- Basic chat completions (streaming, async, history)
+- Basic responses (streaming, async, history)
 - Function calling (basic to advanced multi-function scenarios)
 - Structured outputs using Pydantic models
 - Retrieval-Augmented Generation (RAG) with various complexity levels
@@ -20,10 +20,10 @@ The scripts are designed to be educational and can run with multiple LLM provide
 
 All example scripts are located in the root directory. They follow a consistent pattern of setting up an OpenAI client based on environment variables, then demonstrating specific API features.
 
-**Chat Completion Scripts:**
-- `chat.py` - Simple chat completion example
-- `chat_stream.py` - Streaming chat completions
-- `chat_async.py` - Async chat completions with `asyncio.gather` examples
+**Chat Scripts:**
+- `chat.py` - Simple response example
+- `chat_stream.py` - Streaming responses
+- `chat_async.py` - Async responses with `asyncio.gather` examples
 - `chat_history.py` - Multi-turn chat with message history
 - `chat_history_stream.py` - Multi-turn chat with streaming
 - `chat_safety.py` - Content safety filter exception handling
