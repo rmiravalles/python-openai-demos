@@ -1,6 +1,6 @@
 # Demos de Python con OpenAI
 
-Este repositorio contiene una colección de scripts en Python que demuestran cómo usar la API de Responses de OpenAI (y modelos compatibles). 📺 [Video tutorial de como usar este repositorio](https://youtu.be/0WwpMFMHEOo?si=9K4jFdBYdj-kb_GL)
+Este repositorio contiene una colección de scripts en Python que demuestran cómo usar la API de Responses de OpenAI (y modelos compatibles). 📺 [Video tutorial de cómo usar este repositorio](https://youtu.be/0WwpMFMHEOo?si=9K4jFdBYdj-kb_GL)
 
 * [Ejemplos](#ejemplos)
   * [Responses de OpenAI](#responses-de-openai)
@@ -19,8 +19,8 @@ Este repositorio contiene una colección de scripts en Python que demuestran có
 ### Responses de OpenAI
 
 Estos scripts usan el paquete `openai` de Python para demostrar cómo utilizar la API de Responses. En orden creciente de complejidad:
-1. [`chat.py`](chat.py): Script simple que muestra cómo generar un completado de chat.
-2. [`chat_stream.py`](chat_stream.py): Añade `stream=True` para recibir el completado progresivamente.
+1. [`chat.py`](chat.py): Script simple que muestra cómo generar una respuesta.
+2. [`chat_stream.py`](chat_stream.py): Añade `stream=True` para recibir la respuesta progresivamente.
 3. [`chat_history.py`](chat_history.py): Añade un chat bidireccional que conserva el historial y lo reenvía en cada llamada.
 4. [`chat_history_stream.py`](chat_history_stream.py): Igual que el anterior pero además con `stream=True`.
 

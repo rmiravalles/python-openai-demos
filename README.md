@@ -23,7 +23,7 @@ These scripts use the openai Python package to demonstrate how to use the OpenAI
 In increasing order of complexity, the scripts are:
 
 1. [`chat.py`](./chat.py): A simple script that demonstrates how to use the OpenAI Responses API to generate a response.
-2. [`chat_stream.py`](./chat_stream.py): Adds `stream=True` to the API call to return a generator that streams the completion as it is being generated.
+2. [`chat_stream.py`](./chat_stream.py): Adds `stream=True` to the API call to return a generator that streams the response text as it is being generated.
 3. [`chat_history.py`](./chat_history.py): Adds a back-and-forth chat interface using `input()` which keeps track of past messages and sends them with each API call.
 4. [`chat_history_stream.py`](./chat_history_stream.py): The same idea, but with `stream=True` enabled.
 
