@@ -34,7 +34,7 @@ Scripts adicionales de características:
 
 Estos scripts muestran cómo usar la característica "tools" (function calling) de la API de Responses. Permite que el modelo decida si invoca funciones definidas por el desarrollador y devolver argumentos estructurados en lugar (o antes) de una respuesta en lenguaje natural.
 
-En todos los ejemplos se declara una lista de funciones en el parámetro `tools`. El modelo puede responder con `message.tool_calls` que contiene una o más llamadas. Cada llamada incluye el `name` de la función y una cadena JSON con `arguments` que respetan el esquema declarado. Tu aplicación debe: (1) detectar las llamadas, (2) ejecutar la lógica local/externa correspondiente y (3) (opcionalmente) enviar el resultado de la herramienta de vuelta al modelo para una respuesta final.
+En todos los ejemplos se declara una lista de funciones en el parámetro `tools`. En estos demos con Responses, las llamadas a herramientas aparecen en `response.output`, por ejemplo como elementos con `type == "function_call"`. Cada una de esas llamadas incluye el `name` de la función y una cadena JSON con `arguments` que respetan el esquema declarado. Tu aplicación debe: (1) detectar las llamadas, (2) ejecutar la lógica local/externa correspondiente y (3) (opcionalmente) enviar el resultado de la herramienta de vuelta al modelo para una respuesta final.
 
 Scripts (en orden de capacidad):
 

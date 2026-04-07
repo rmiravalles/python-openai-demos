@@ -36,7 +36,7 @@ Plus these scripts to demonstrate additional features:
 
 These scripts demonstrate using the Responses API "tools" (a.k.a. function calling) feature, which lets the model decide when to call developer-defined functions and return structured arguments instead of (or before) a natural language answer.
 
-In all of these examples, a list of functions is declared in the `tools` parameter. The model may respond with `message.tool_calls` containing one or more tool calls. Each tool call includes the function `name` and a JSON string of `arguments` that match the declared schema. Your application is responsible for: (1) detecting tool calls, (2) executing the corresponding local / external logic, and (3) (optionally) sending the tool result back to the model for a final answer.
+In all of these examples, a list of functions is declared in the `tools` parameter. The model may respond with one or more tool calls as items in `response.output` (for example, items where `type == "function_call"`). Each tool call item includes the function `name` and a JSON string of `arguments` that match the declared schema. Your application is responsible for: (1) detecting tool calls, (2) executing the corresponding local / external logic, and (3) (optionally) sending the tool result back to the model for a final answer.
 
 Scripts (in increasing order of capability):
 
