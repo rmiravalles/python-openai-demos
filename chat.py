@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+from pathlib import Path
 
 import azure.identity
 import openai
@@ -6,7 +8,7 @@ from dotenv import load_dotenv
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "azure")
+API_HOST = os.getenv("API_HOST", "openai")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -27,15 +29,24 @@ else:
     MODEL_NAME = os.environ["OPENAI_MODEL"]
 
 
+user_input = "What are the benefits of using Kubernetes NetworkPolicies?"
+
 response = client.responses.create(
     model=MODEL_NAME,
-    temperature=0.7,
     input=[
-        {"role": "system", "content": "You are a helpful assistant that makes lots of cat references and uses emojis."},
-        {"role": "user", "content": "What's the weather in SF today?"},
+        {"role": "system", "content": "You are a knowledgeable Kubernetes administrator that provides accurate and detailed information."},
+        {"role": "user", "content": user_input},
     ],
     store=False,
 )
 
+output_file = Path("response.txt")
+with output_file.open("a", encoding="utf-8") as file_handle:
+    file_handle.write(f"=== {datetime.now().isoformat(timespec='seconds')} ===\n")
+    file_handle.write(f"User input: {user_input}\n\n")
+    file_handle.write(response.output_text)
+    file_handle.write("\n\n")
+
 print(f"Response from {API_HOST}: \n")
 print(response.output_text)
+print(f"\nSaved response to {output_file.resolve()}")

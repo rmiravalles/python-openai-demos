@@ -3,17 +3,18 @@
 This repository contains a collection of Python scripts that demonstrate how to use the OpenAI Responses API.
 [📺 Watch this video walkthrough of running these demos in GitHub Codespaces](https://www.youtube.com/watch?v=_daw48A-RZI)
 
-* [Examples](#examples)
-  * [OpenAI Responses](#openai-responses)
-  * [Function calling](#function-calling)
-  * [Structured outputs](#structured-outputs)
-  * [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
-* [Setting up the Python environment](#setting-up-the-python-environment)
-* [Configuring the OpenAI environment variables](#configuring-the-openai-environment-variables)
-  * [Using Azure OpenAI models](#using-azure-openai-models)
-  * [Using OpenAI.com models](#using-openaicom-models)
-  * [Using Ollama models](#using-ollama-models)
-* [Resources](#resources)
+- [Python OpenAI demos](#python-openai-demos)
+  - [Examples](#examples)
+    - [OpenAI Responses](#openai-responses)
+    - [Function calling](#function-calling)
+    - [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
+  - [Structured outputs](#structured-outputs)
+  - [Setting up the Python environment](#setting-up-the-python-environment)
+  - [Configuring the OpenAI environment variables](#configuring-the-openai-environment-variables)
+  - [Using Azure OpenAI models](#using-azure-openai-models)
+  - [Using OpenAI.com models](#using-openaicom-models)
+  - [Using Ollama models](#using-ollama-models)
+  - [Resources](#resources)
 
 ## Examples
 
@@ -84,6 +85,11 @@ If you open this up in a Dev Container or GitHub Codespaces, everything will be 
 If not, follow these steps:
 
 1. Set up a Python virtual environment and activate it.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
 2. Install the required packages:
 

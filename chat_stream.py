@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "azure")
+API_HOST = os.getenv("API_HOST", "openai")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
@@ -29,8 +29,8 @@ completion_stream = client.responses.create(
     model=MODEL_NAME,
     temperature=0.7,
     input=[
-        {"role": "system", "content": "You are a helpful assistant that makes lots of cat references and uses emojis."},
-        {"role": "user", "content": "please write a haiku about a hungry cat that wants tuna"},
+        {"role": "system", "content": "You are a knowledgeable Kubernetes administrator that provides accurate and detailed information."},
+        {"role": "user", "content": "How can I securely store secrets in Kubernetes?"},
     ],
     stream=True,
     store=False,

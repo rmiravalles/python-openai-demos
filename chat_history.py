@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 # Setup the OpenAI client to use either Azure, OpenAI.com, or Ollama API
 load_dotenv(override=True)
-API_HOST = os.getenv("API_HOST", "azure")
+API_HOST = os.getenv("API_HOST", "openai")
 
 if API_HOST == "azure":
     token_provider = azure.identity.get_bearer_token_provider(
