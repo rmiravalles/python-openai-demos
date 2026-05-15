@@ -399,4 +399,3 @@ Important caveats (so you apply benefits correctly):
 - Pods are unrestricted by default until matched by a policy that restricts them (so consider a default‑deny approach for sensitive namespaces).
 
 In short: NetworkPolicies give you scalable, declarative network segmentation and control that improves security, reduces attack surface, helps meet compliance, and is manageable via Kubernetes-native mechanisms.
-
